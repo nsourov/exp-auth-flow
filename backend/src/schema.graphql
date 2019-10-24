@@ -20,8 +20,7 @@ type Message {
 type Mutation {
   # USER
   signup(email: String!, password: String!, name: String!): Message!
-  sendVerification(email: String!): Message!
-  verifyEmail(emailToken: String!): Message!
+  verifyEmail(emailToken: String!, email: String): Message!
   login(email: String!, password: String!): AuthPayload!
   requestReset(email: String!): Message
   resetPassword(
@@ -29,7 +28,7 @@ type Mutation {
     password: String!
     confirmPassword: String!
   ): Message!
-  changeEmail(email: String): Message!
+  requestChangeEmail(email: String): Message!
 }
 
 type Query {

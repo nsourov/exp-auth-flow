@@ -10,19 +10,11 @@ const {
 
 const { ADMIN_MAIL } = process.env;
 
-async function createTokenForEmail(args) {
-  const emailToken = await createHash();
-  const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
-
-  const user = await prisma.updateUser({
-    where: { email: args.email },
-    data: { emailToken, emailTokenExpiry }
-  });
-
+async function sendEmailVerification({ email, emailToken }) {
   // Send email with verification url
   await transport.sendMail({
     from: ADMIN_MAIL,
-    to: user.email,
+    to: email,
     subject: "Email verification",
     html: verifyEmailTemplate(emailToken)
   });
@@ -41,14 +33,19 @@ const mutations = {
 
     const data = { ...args };
 
+    const emailToken = await createHash();
+    const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
     const newUser = await prisma.createUser({
       ...data,
-      password
+      password,
+      emailToken,
+      emailTokenExpiry
     });
-    return createTokenForEmail(newUser);
+    return sendEmailVerification(newUser);
   },
 
-  async verifyEmail(parent, { emailToken }, ctx) {
+  async verifyEmail(parent, { emailToken, email }, ctx) {
     const [user] = await prisma.users({
       where: {
         emailToken,
@@ -60,15 +57,24 @@ const mutations = {
     }
     await prisma.updateUser({
       where: { id: user.id },
-      data: { emailVerified: true }
+      data: { emailVerified: true, email: email || user.email }
     });
     return {
       message: "Email verified"
     };
   },
 
-  async sendVerification(parent, args, ctx) {
-    return createTokenForEmail(args);
+  async requestChangeEmail(parent, args, ctx) {
+    const user = await loginChecker(ctx);
+
+    const emailToken = await createHash();
+    const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
+    await prisma.updateUser({
+      where: { email: user.email },
+      data: { emailToken, emailTokenExpiry }
+    });
+    return sendEmailVerification({ email: args.email, emailToken });
   },
 
   async login(parent, args, ctx) {
@@ -138,15 +144,6 @@ const mutations = {
 
     return { message: "Password changed!" };
   },
-
-  async changeEmail(parent, args, ctx) {
-    const user = await loginChecker(ctx);
-    await prisma.updateUser({
-      where: { id: user.id },
-      data: { email: args.email, emailVerified: false }
-    });
-    return createTokenForEmail(args);
-  }
 };
 
 module.exports = mutations;
