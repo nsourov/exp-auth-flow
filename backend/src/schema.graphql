@@ -24,6 +24,11 @@ type Mutation {
   verifyEmail(emailToken: String!): Message!
   login(email: String!, password: String!): AuthPayload!
   requestReset(email: String!): Message
+  resetPassword(
+    resetToken: String!
+    password: String!
+    confirmPassword: String!
+  ): Message!
 }
 
 type Query {

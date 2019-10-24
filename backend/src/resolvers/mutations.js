@@ -113,6 +113,30 @@ const mutations = {
       html: resetPasswordTemplate(resetToken)
     });
     return { message: `An email sent to you with reset token.` };
+  },
+
+  async resetPassword(parent, { resetToken, password, confirmPassword }, ctx) {
+    const [user] = await prisma.users({
+      where: {
+        resetToken,
+        resetTokenExpiry_gte: Date.now() - 3600000 // Make sue that the token is using within 1 hour
+      }
+    });
+    if (!user) {
+      throw new Error("This token is either invalid or expired!");
+    }
+    if (password !== confirmPassword) {
+      throw new Error("Passwords don't match!");
+    }
+
+    const newPassword = await bcrypt.hash(password, 10);
+
+    await prisma.updateUser({
+      where: { id: user.id },
+      data: { password: newPassword }
+    });
+
+    return { message: "Password changed!" };
   }
 };
 
