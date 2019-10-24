@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 const { prisma } = require("../generated/prisma-client");
-const { signToken, createHash, transport } = require("./common");
+const { signToken, createHash, transport, loginChecker } = require("./common");
 
 const {
   verifyEmailTemplate,
@@ -137,6 +137,15 @@ const mutations = {
     });
 
     return { message: "Password changed!" };
+  },
+
+  async changeEmail(parent, args, ctx) {
+    const user = await loginChecker(ctx);
+    await prisma.updateUser({
+      where: { id: user.id },
+      data: { email: args.email, emailVerified: false }
+    });
+    return createTokenForEmail(args);
   }
 };
 

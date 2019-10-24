@@ -29,6 +29,7 @@ type Mutation {
     password: String!
     confirmPassword: String!
   ): Message!
+  changeEmail(email: String): Message!
 }
 
 type Query {
