@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 const { prisma } = require("../generated/prisma-client");
-const { signToken } = require("./common");
+const { signToken, createHash } = require("./common");
 
 const mutations = {
   async signup(parent, args, ctx) {
@@ -14,12 +14,17 @@ const mutations = {
 
     const data = { ...args };
 
-    const newUser = await prisma.createUser({ ...data, password });
+    const emailToken = await createHash();
+    const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
 
-    return {
-      token: signToken(newUser),
-      user: newUser
-    };
+    await prisma.createUser({
+      ...data,
+      password,
+      emailToken,
+      emailTokenExpiry,
+    });
+
+    return { message: emailToken };
   },
 
   async login(parent, args, ctx) {

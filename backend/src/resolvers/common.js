@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const { randomBytes } = require("crypto");
+const { promisify } = require("util");
 
 const { prisma } = require("../generated/prisma-client");
 const { APP_SECRET } = process.env;
@@ -28,4 +30,12 @@ async function loginChecker({ request }) {
     return user;
   }
 }
-module.exports = { signToken, loginChecker };
+
+async function createHash() {
+  const randomBytesPromise = promisify(randomBytes);
+  // 20 is the byte we want to hash, This can be any number
+  const hash = (await randomBytesPromise(20)).toString("hex");
+  return hash;
+}
+
+module.exports = { signToken, loginChecker, createHash };

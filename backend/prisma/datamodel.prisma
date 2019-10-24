@@ -4,6 +4,8 @@ type User {
   password: String!
   name: String!
   emailVerified: Boolean @default(value: false)
+  emailToken: String
+  emailTokenExpiry: Float
   resetToken: String
   resetTokenExpiry: Float
   createdAt: DateTime! @createdAt

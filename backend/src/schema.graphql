@@ -1,4 +1,13 @@
 # import * from './generated/prisma.graphql'
+type User {
+  id: ID!
+  email: String!
+  password: String!
+  name: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type AuthPayload {
   token: String!
   user: User!
@@ -10,14 +19,8 @@ type Message {
 
 type Mutation {
   # USER
-  signup(email: String!, password: String!, name: String!): AuthPayload!
+  signup(email: String!, password: String!, name: String!): Message!
   login(email: String!, password: String!): AuthPayload!
-  # requestReset(email: String!): Message
-  # resetPassword(
-  #   resetToken: String!
-  #   password: String!
-  #   confirmPassword: String!
-  # ): Message!
 }
 
 type Query {
