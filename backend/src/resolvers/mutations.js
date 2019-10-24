@@ -3,7 +3,10 @@ const bcrypt = require("bcryptjs");
 const { prisma } = require("../generated/prisma-client");
 const { signToken, createHash, transport } = require("./common");
 
-const verifyEmailTemplate = require("./mail-templates/email-verification");
+const {
+  verifyEmailTemplate,
+  resetPasswordTemplate
+} = require("./mail-templates");
 
 const { ADMIN_MAIL } = process.env;
 
@@ -90,6 +93,26 @@ const mutations = {
       token: signToken(user),
       user
     };
+  },
+
+  async requestReset(parent, { email }, ctx) {
+    const user = await prisma.user({ email });
+    if (!user) {
+      throw new Error(`No such user found for email ${email}`);
+    }
+    const resetToken = await createHash();
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+    await prisma.updateUser({
+      where: { email },
+      data: { resetToken, resetTokenExpiry }
+    });
+    await transport.sendMail({
+      from: ADMIN_MAIL,
+      to: user.email,
+      subject: "Your Password Reset Token",
+      html: resetPasswordTemplate(resetToken)
+    });
+    return { message: `An email sent to you with reset token.` };
   }
 };
 

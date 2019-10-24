@@ -23,6 +23,7 @@ type Mutation {
   sendVerification(email: String!): Message!
   verifyEmail(emailToken: String!): Message!
   login(email: String!, password: String!): AuthPayload!
+  requestReset(email: String!): Message
 }
 
 type Query {
