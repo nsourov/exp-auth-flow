@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
 const { randomBytes } = require("crypto");
 const { promisify } = require("util");
+const nodemailer = require("nodemailer");
 
 const { prisma } = require("../generated/prisma-client");
-const { APP_SECRET } = process.env;
+const { APP_SECRET, MAIL_HOST, MAIL_PORT, MAIL_USER, MAIL_PASS } = process.env;
 
 const jwtValidator = token => jwt.verify(token, APP_SECRET);
 
@@ -38,4 +39,13 @@ async function createHash() {
   return hash;
 }
 
-module.exports = { signToken, loginChecker, createHash };
+const transport = nodemailer.createTransport({
+  host: MAIL_HOST,
+  port: MAIL_PORT,
+  auth: {
+    user: MAIL_USER,
+    pass: MAIL_PASS
+  }
+});
+
+module.exports = { signToken, loginChecker, createHash, transport };
