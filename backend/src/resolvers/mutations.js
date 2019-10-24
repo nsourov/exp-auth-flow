@@ -5,6 +5,28 @@ const { signToken, createHash, transport } = require("./common");
 
 const verifyEmailTemplate = require("./mail-templates/email-verification");
 
+const { ADMIN_MAIL } = process.env;
+
+async function createTokenForEmail(args) {
+  const emailToken = await createHash();
+  const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
+  const user = await prisma.updateUser({
+    where: { email: args.email },
+    data: { emailToken, emailTokenExpiry }
+  });
+
+  // Send email with verification url
+  await transport.sendMail({
+    from: ADMIN_MAIL,
+    to: user.email,
+    subject: "Email verification",
+    html: verifyEmailTemplate(emailToken)
+  });
+
+  return { message: "Verification url sent to your mail" };
+}
+
 const mutations = {
   async signup(parent, args, ctx) {
     const user = await prisma.user({ email: args.email });
@@ -16,25 +38,11 @@ const mutations = {
 
     const data = { ...args };
 
-    const emailToken = await createHash();
-    const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
-
-    await prisma.createUser({
+    const newUser = await prisma.createUser({
       ...data,
-      password,
-      emailToken,
-      emailTokenExpiry
+      password
     });
-
-    // Send email with verification url
-    await transport.sendMail({
-      from: process.env.ADMIN_MAIL,
-      to: args.email,
-      subject: "Email verification",
-      html: verifyEmailTemplate(emailToken)
-    });
-
-    return { message: emailToken };
+    return createTokenForEmail(newUser);
   },
 
   async verifyEmail(parent, { emailToken }, ctx) {
@@ -54,6 +62,10 @@ const mutations = {
     return {
       message: "Email verified"
     };
+  },
+
+  async sendVerification(parent, args, ctx) {
+    return createTokenForEmail(args);
   },
 
   async login(parent, args, ctx) {
