@@ -20,6 +20,26 @@ const mutations = {
       token: signToken(newUser),
       user: newUser
     };
+  },
+
+  async login(parent, args, ctx) {
+    const { email, password } = args;
+    const user = await prisma.user({ email });
+
+    if (!user) {
+      throw new Error(`No user found with this email`);
+    }
+
+    const passwordValid = await bcrypt.compare(password, user.password);
+
+    if (!passwordValid) {
+      throw new Error("Invalid password");
+    }
+
+    return {
+      token: signToken(user),
+      user
+    };
   }
 };
 
