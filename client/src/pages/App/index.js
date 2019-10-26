@@ -22,6 +22,8 @@ import Verify from "../Verify";
 const Login = lazy(() => import("../Login"));
 const Register = lazy(() => import("../Register"));
 const Profile = lazy(() => import("../Profile"));
+const PasswordReset = lazy(() => import('../PasswordReset'));
+
 const ProtectedRoute = lazy(() => import("../../components/ProtectedRoute"));
 
 class App extends Component {
@@ -93,6 +95,7 @@ class App extends Component {
             />
             <Route exact path="/register" component={Register} />
             <Route exact path="/login" component={Login} />
+            <Route exact path="/reset" component={PasswordReset} />
             <Route path="/verify" component={Verify} />
             {/* Default 404 */}
             <Route
