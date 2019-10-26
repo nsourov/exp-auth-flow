@@ -57,7 +57,12 @@ const mutations = {
     }
     const verifiedUser = await prisma.updateUser({
       where: { id: user.id },
-      data: { emailVerified: true, email: email || user.email }
+      data: {
+        emailVerified: true,
+        email: email || user.email,
+        emailToken: "",
+        emailTokenExpiry: Date.now()
+      }
     });
     return {
       token: signToken(verifiedUser),
@@ -151,7 +156,11 @@ const mutations = {
 
     await prisma.updateUser({
       where: { id: user.id },
-      data: { password: newPassword }
+      data: {
+        password: newPassword,
+        resetToken: "",
+        resetTokenExpiry: Date.now()
+      }
     });
 
     return { message: "Password changed!" };
