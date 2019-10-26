@@ -55,11 +55,16 @@ const LoginForm = props => {
     }
   }, [formResult, formLoading]);
 
+  useEffect(() => {
+    if (location.message) {
+      message.success(location.message, 1);
+    }
+  }, [location.message]);
+
   if (submitted && auth.isAuthenticated) {
     const { from } = location.state || { from: { pathname: "/" } };
     return <Redirect to={from} />;
   }
-
   return (
     <div className="layout-wrapper">
       {authError && (

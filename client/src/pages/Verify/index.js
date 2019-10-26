@@ -19,15 +19,17 @@ const Verify = props => {
     const onVerify = async () => {
       try {
         await verifyEmail();
+        // TODO: Login the user here
         SetRedirect(true);
       } catch (error) {
         message.error(formatError(error));
-        history.push('/login')
+        history.push("/login");
       }
     };
     onVerify();
   }, []);
-  if (redirect) return <Redirect to="/login" />;
+  if (redirect)
+    return <Redirect to={{ pathname: "/login", message: "You are verified" }} />;
   return <Spin spinning={loading} />;
 };
 
