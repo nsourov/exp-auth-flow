@@ -17,6 +17,7 @@ import { GET_USER } from "../../resolvers/user/query";
 import client from "../../client";
 
 import Fallback from "../../components/Fallback";
+import Verify from "../Verify";
 
 const Login = lazy(() => import("../Login"));
 const Register = lazy(() => import("../Register"));
@@ -92,6 +93,7 @@ class App extends Component {
             />
             <Route exact path="/register" component={Register} />
             <Route exact path="/login" component={Login} />
+            <Route path="/verify" component={Verify} />
             {/* Default 404 */}
             <Route
               render={() => (

@@ -29,3 +29,11 @@ export const SEND_VERIFICATION = gql`
     }
   }
 `;
+
+export const VERIFY_EMAIL = gql`
+  mutation VERIFY_EMAIL($email: String, $emailToken: String!) {
+    verifyEmail(emailToken: $emailToken, email: $email) {
+      message
+    }
+  }
+`;
