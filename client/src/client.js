@@ -1,55 +1,31 @@
-import { ApolloLink, split } from "apollo-link";
-import { HttpLink } from "apollo-link-http";
-import { getMainDefinition } from "apollo-utilities";
-import { ApolloClient } from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import {
+  ApolloClient,
+  InMemoryCache,
+  HttpLink,
+  ApolloLink
+} from "apollo-boost";
 
-const uri =  process.env.REACT_APP_BACKEND_API;
+const uri = process.env.REACT_APP_BACKEND_API;
+const httpLink = new HttpLink({ uri });
 
-const getToken = () => {
+const authLink = new ApolloLink((operation, forward) => {
+  // Retrieve the authorization token from local storage.
   const token = localStorage.getItem("jwtToken");
-  const headers = {
-    Authorization: token ? `Bearer ${token}` : ""
-  };
-  return headers;
-};
 
-// Create an http link:
-
-const AuthLink = (operation, forward) => {
-  operation.setContext(context => ({
-    ...context,
+  // Use the setContext method to set the HTTP headers.
+  operation.setContext({
     headers: {
-      ...context.headers,
-      authorization: getToken().Authorization
+      authorization: token ? `Bearer ${token}` : ""
     }
-  }));
+  });
 
+  // Call the next link in the middleware chain.
   return forward(operation);
-};
+});
 
-const httpLink = ApolloLink.from([
-  AuthLink,
-  new HttpLink({
-    uri
-  })
-]);
-
-// using the ability to split links, you can send data to each link
-// depending on what kind of operation is being sent
-const link = split(
-  // split based on operation type
-  ({ query }) => {
-    const definition = getMainDefinition(query);
-    return (
-      definition.kind === "OperationDefinition" &&
-      definition.operation === "subscription"
-    );
-  },
-  httpLink
-);
-
-export default new ApolloClient({
-  link,
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache()
 });
+
+export default client;

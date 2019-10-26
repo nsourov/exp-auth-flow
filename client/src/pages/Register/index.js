@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import PropTypes from "prop-types";
 import { Link, withRouter, Redirect } from "react-router-dom";
@@ -11,44 +11,41 @@ import { formatError } from "../../common/error-message";
 import formRules from "../../common/form-rules";
 import { SIGNUP_MUTATION } from "../../resolvers/user/mutation";
 
+import ResendButton from "../../components/ResendButton";
+
 import "./style.css";
 
 const { Item, create } = Form;
 
 const RegisterForm = props => {
-  const [submitted, setSubmitted] = useState(true);
   const [signup] = useMutation(SIGNUP_MUTATION);
+  const [message, setMessage] = useState(null);
 
-  const { form, history, location, auth } = props;
-  const { formProps, formResult, formLoading } = useForm({
+  const { form, location, auth } = props;
+  const { formProps, formLoading } = useForm({
     form,
-    async submit(data) {
+    async submit(variables) {
       try {
-        setSubmitted(false);
-        await signup({ variables: data });
-        message.success("Account created", 1);
-        history.push("/login");
+        const { data } = await signup({ variables });
+        setMessage(data.signup.message);
       } catch (error) {
         console.log(error);
-        message.destroy();
-        message.error(formatError(error));
       }
     }
   });
 
-  useEffect(() => {
-    if (formResult && !formLoading) {
-      setSubmitted(true);
-    }
-  }, [formLoading, formResult]);
-
-  if (submitted && auth.isAuthenticated) {
+  if (auth.isAuthenticated) {
     const { from } = location.state || { from: { pathname: "/" } };
     return <Redirect to={from} />;
   }
 
   return (
     <div className="layout-wrapper">
+      {message && (
+        <p>
+          {message}. <ResendButton email={form.getFieldValue("email")} />
+        </p>
+      )}
       <Spin spinning={formLoading} size="large" tip="Creating account">
         <Form {...formProps} className="register-form">
           <Item>
