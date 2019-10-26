@@ -11,12 +11,16 @@ import { formatError } from "../../common/error-message";
 import formRules from "../../common/form-rules";
 import { LOGIN_MUTATION } from "../../resolvers/user/mutation";
 
+import ResendButton from "../../components/ResendButton";
+
 import "./style.css";
 
 const { Item, create } = Form;
 
 const LoginForm = props => {
   const [submitted, setSubmitted] = useState(true);
+  const [authError, setError] = useState(null);
+
   const [login] = useMutation(LOGIN_MUTATION);
   const { form, location, auth } = props;
 
@@ -34,9 +38,7 @@ const LoginForm = props => {
         props.loginUser(token);
         return true;
       } catch (error) {
-        console.log(error);
-        message.destroy();
-        message.error(formatError(error));
+        setError(formatError(error));
         return false;
       }
     }
@@ -55,6 +57,11 @@ const LoginForm = props => {
 
   return (
     <div className="layout-wrapper">
+      {authError && (
+        <p>
+          {authError}. <ResendButton email={form.getFieldValue("email")} />
+        </p>
+      )}
       <Spin spinning={formLoading} size="large" tip="Authenticating">
         <Form {...formProps} className="login-form">
           <Item>

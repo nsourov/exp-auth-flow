@@ -19,7 +19,7 @@ const { Item, create } = Form;
 
 const RegisterForm = props => {
   const [signup] = useMutation(SIGNUP_MUTATION);
-  const [message, setMessage] = useState(null);
+  const [authMessage, setMessage] = useState(null);
 
   const { form, location, auth } = props;
   const { formProps, formLoading } = useForm({
@@ -29,7 +29,7 @@ const RegisterForm = props => {
         const { data } = await signup({ variables });
         setMessage(data.signup.message);
       } catch (error) {
-        console.log(error);
+        message.error(formatError(error));
       }
     }
   });
@@ -41,9 +41,9 @@ const RegisterForm = props => {
 
   return (
     <div className="layout-wrapper">
-      {message && (
+      {authMessage && (
         <p>
-          {message}. <ResendButton email={form.getFieldValue("email")} />
+          {authMessage}. <ResendButton email={form.getFieldValue("email")} />
         </p>
       )}
       <Spin spinning={formLoading} size="large" tip="Creating account">
