@@ -1,6 +1,6 @@
 const { DASHBOARD_URL } = process.env;
 
-const verifyEmailTemplate = token => `
+const verifyEmailTemplate = ({ email, emailToken }) => `
   <div className="email" style="
     border: 1px solid black;
     padding: 20px;
@@ -11,7 +11,7 @@ const verifyEmailTemplate = token => `
     <h2>Hello There!</h2>
     <p>Your email verification is here!
     \n\n
-    <a href="${DASHBOARD_URL}/verify?token=${token}">Click Here to verify</a></p>
+    <a href="${DASHBOARD_URL}/verify?token=${emailToken}&&email=${email}">Click Here to verify</a></p>
   `;
 
 const resetPasswordTemplate = token => `

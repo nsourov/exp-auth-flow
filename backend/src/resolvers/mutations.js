@@ -16,7 +16,7 @@ async function sendEmailVerification({ email, emailToken }) {
     from: ADMIN_MAIL,
     to: email,
     subject: "Email verification",
-    html: verifyEmailTemplate(emailToken)
+    html: verifyEmailTemplate({ email, emailToken })
   });
 
   return { message: "Verification url sent to your mail" };
@@ -55,13 +55,30 @@ const mutations = {
     if (!user) {
       throw new Error("This link is either invalid or expired!");
     }
-    await prisma.updateUser({
+    const verifiedUser = await prisma.updateUser({
       where: { id: user.id },
-      data: { emailVerified: true, email: email || user.email }
+      data: {
+        emailVerified: true,
+        email: email || user.email,
+        emailToken: "",
+        emailTokenExpiry: Date.now()
+      }
     });
     return {
-      message: "Email verified"
+      token: signToken(verifiedUser),
+      user: verifiedUser
     };
+  },
+
+  async sendVerification(parent, args, ctx) {
+    const emailToken = await createHash();
+    const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
+    await prisma.updateUser({
+      where: { email: args.email },
+      data: { emailToken, emailTokenExpiry }
+    });
+    return sendEmailVerification({ email: args.email, emailToken });
   },
 
   async requestChangeEmail(parent, args, ctx) {
@@ -139,11 +156,15 @@ const mutations = {
 
     await prisma.updateUser({
       where: { id: user.id },
-      data: { password: newPassword }
+      data: {
+        password: newPassword,
+        resetToken: "",
+        resetTokenExpiry: Date.now()
+      }
     });
 
     return { message: "Password changed!" };
-  },
+  }
 };
 
 module.exports = mutations;
