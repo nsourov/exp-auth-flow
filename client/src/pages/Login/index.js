@@ -38,7 +38,12 @@ const LoginForm = props => {
         props.loginUser(token);
         return true;
       } catch (error) {
-        setError(formatError(error));
+        const errorMessage = formatError(error);
+        if (errorMessage === "You have to verify your email first") {
+          setError(formatError(error));
+        } else {
+          message.error(errorMessage, 1);
+        }
         return false;
       }
     }

@@ -64,6 +64,17 @@ const mutations = {
     };
   },
 
+  async sendVerification(parent, args, ctx) {
+    const emailToken = await createHash();
+    const emailTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
+    await prisma.updateUser({
+      where: { email: args.email },
+      data: { emailToken, emailTokenExpiry }
+    });
+    return sendEmailVerification({ email: args.email, emailToken });
+  },
+
   async requestChangeEmail(parent, args, ctx) {
     const user = await loginChecker(ctx);
 

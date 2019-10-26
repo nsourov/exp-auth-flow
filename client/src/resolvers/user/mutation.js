@@ -21,3 +21,11 @@ export const LOGIN_MUTATION = gql`
     }
   }
 `;
+
+export const SEND_VERIFICATION = gql`
+  mutation SEND_VERIFICATION($email: String!) {
+    sendVerification(email: $email) {
+      message
+    }
+  }
+`;
