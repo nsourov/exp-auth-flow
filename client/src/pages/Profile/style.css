@@ -1,0 +1,6 @@
+.profile-action button{
+  margin-top: 10px;
+}
+.profile-action button:nth-child(2) {
+  margin-left: 10px;
+}

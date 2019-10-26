@@ -33,7 +33,7 @@ export const SEND_VERIFICATION = gql`
 export const VERIFY_EMAIL = gql`
   mutation VERIFY_EMAIL($email: String, $emailToken: String!) {
     verifyEmail(emailToken: $emailToken, email: $email) {
-      message
+      token
     }
   }
 `;
@@ -57,6 +57,14 @@ export const RESET_PASSWORD = gql`
       password: $password
       confirmPassword: $confirmPassword
     ) {
+      message
+    }
+  }
+`;
+
+export const UPDATE_USER = gql`
+  mutation UPDATE_USER($email: String) {
+    requestChangeEmail(email: $email) {
       message
     }
   }
